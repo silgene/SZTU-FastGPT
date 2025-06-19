@@ -7,7 +7,7 @@ import ChatRecordContextProvider from '@/web/core/chat/context/chatRecordContext
 import { Box, Button, Flex, Switch, Textarea } from '@chakra-ui/react';
 import { cardStyles } from '../constants';
 import { useTranslation } from 'react-i18next';
-import { type ToolType } from '@fastgpt/global/core/app/type';
+import { type McpToolConfigType } from '@fastgpt/global/core/app/type';
 import FormLabel from '@fastgpt/web/components/common/MyBox/FormLabel';
 import QuestionTip from '@fastgpt/web/components/common/MyTooltip/QuestionTip';
 import { Controller, useForm } from 'react-hook-form';
@@ -16,10 +16,19 @@ import dynamic from 'next/dynamic';
 import { useRequest2 } from '@fastgpt/web/hooks/useRequest';
 import Markdown from '@/components/Markdown';
 import { postRunMCPTool } from '@/web/core/app/api/plugin';
+import { type StoreSecretValueType } from '@fastgpt/global/common/secret/type';
 
 const JsonEditor = dynamic(() => import('@fastgpt/web/components/common/Textarea/JsonEditor'));
 
-const ChatTest = ({ currentTool, url }: { currentTool: ToolType | null; url: string }) => {
+const ChatTest = ({
+  currentTool,
+  url,
+  headerSecret
+}: {
+  currentTool?: McpToolConfigType;
+  url: string;
+  headerSecret: StoreSecretValueType;
+}) => {
   const { t } = useTranslation();
 
   const [output, setOutput] = useState<string>('');
@@ -42,6 +51,7 @@ const ChatTest = ({ currentTool, url }: { currentTool: ToolType | null; url: str
       return await postRunMCPTool({
         params: data,
         url,
+        headerSecret,
         toolName: currentTool.name
       });
     },
@@ -135,7 +145,15 @@ const ChatTest = ({ currentTool, url }: { currentTool: ToolType | null; url: str
   );
 };
 
-const Render = ({ currentTool, url }: { currentTool: ToolType | null; url: string }) => {
+const Render = ({
+  currentTool,
+  url,
+  headerSecret
+}: {
+  currentTool?: McpToolConfigType;
+  url: string;
+  headerSecret: StoreSecretValueType;
+}) => {
   const { chatId } = useChatStore();
   const { appDetail } = useContextSelector(AppContext, (v) => v);
 
@@ -157,7 +175,7 @@ const Render = ({ currentTool, url }: { currentTool: ToolType | null; url: strin
       showNodeStatus
     >
       <ChatRecordContextProvider params={chatRecordProviderParams}>
-        <ChatTest currentTool={currentTool} url={url} />
+        <ChatTest currentTool={currentTool} url={url} headerSecret={headerSecret} />
       </ChatRecordContextProvider>
     </ChatItemContextProvider>
   );
@@ -178,7 +196,7 @@ const RenderToolInput = ({
     type: string;
     description?: string;
   };
-  toolData: ToolType | null;
+  toolData?: McpToolConfigType;
   value: any;
   onChange: (value: any) => void;
   isInvalid: boolean;
@@ -196,15 +214,7 @@ const RenderToolInput = ({
       );
     }
     if (paramInfo.type === 'number') {
-      return (
-        <MyNumberInput
-          step={1}
-          bg={'myGray.50'}
-          isInvalid={isInvalid}
-          value={value}
-          onChange={onChange}
-        />
-      );
+      return <MyNumberInput step={1} isInvalid={isInvalid} value={value} onChange={onChange} />;
     }
     if (paramInfo.type === 'boolean') {
       return <Switch isChecked={value} onChange={onChange} isInvalid={isInvalid} />;

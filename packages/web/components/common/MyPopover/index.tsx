@@ -43,11 +43,11 @@ const MyPopover = ({
       initialFocusRef={firstFieldRef}
       onOpen={() => {
         onOpen();
-        onOpenFunc && onOpenFunc();
+        onOpenFunc?.();
       }}
       onClose={() => {
         onClose();
-        onCloseFunc && onCloseFunc();
+        onCloseFunc?.();
       }}
       placement={placement}
       offset={offset}
@@ -57,6 +57,7 @@ const MyPopover = ({
       closeDelay={100}
       isLazy
       lazyBehavior="keepMounted"
+      autoFocus={false}
     >
       <PopoverTrigger>{Trigger}</PopoverTrigger>
       <PopoverContent {...props}>

@@ -17,8 +17,7 @@ export const CustomFeedbackNode: FlowNodeTemplateType = {
   avatar: 'core/workflow/template/customFeedback',
   name: i18nT('workflow:custom_feedback'),
   intro: i18nT('workflow:intro_custom_feedback'),
-  courseUrl: '/docs/guide/workbench/workflow/custom_feedback/',
-  version: '486',
+  courseUrl: '/docs/guide/dashboard/workflow/custom_feedback/',
   inputs: [
     {
       key: NodeInputKeyEnum.textareaInput,

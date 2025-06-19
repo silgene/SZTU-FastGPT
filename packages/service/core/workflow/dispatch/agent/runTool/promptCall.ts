@@ -38,7 +38,7 @@ import {
   parseLLMStreamResponse
 } from '../../../../ai/utils';
 import { type WorkflowResponseType } from '../../type';
-import { toolValueTypeList } from '@fastgpt/global/core/workflow/constants';
+import { toolValueTypeList, valueTypeJsonSchemaMap } from '@fastgpt/global/core/workflow/constants';
 import { type WorkflowInteractiveResponseType } from '@fastgpt/global/core/workflow/template/system/interactive/type';
 import { ChatItemValueTypeEnum } from '@fastgpt/global/core/chat/constants';
 
@@ -166,6 +166,14 @@ export const runToolWithPromptCall = async (
 
   const toolsPrompt = JSON.stringify(
     toolNodes.map((item) => {
+      if (item.jsonSchema) {
+        return {
+          toolId: item.nodeId,
+          description: item.intro,
+          parameters: item.jsonSchema
+        };
+      }
+
       const properties: Record<
         string,
         {
@@ -176,9 +184,9 @@ export const runToolWithPromptCall = async (
         }
       > = {};
       item.toolParams.forEach((item) => {
-        const jsonSchema = (
-          toolValueTypeList.find((type) => type.value === item.valueType) || toolValueTypeList[0]
-        ).jsonSchema;
+        const jsonSchema = item.valueType
+          ? valueTypeJsonSchemaMap[item.valueType] || toolValueTypeList[0].jsonSchema
+          : toolValueTypeList[0].jsonSchema;
 
         properties[item.key] = {
           ...jsonSchema,
@@ -220,7 +228,8 @@ export const runToolWithPromptCall = async (
 
   const max_tokens = computedMaxToken({
     model: toolModel,
-    maxToken
+    maxToken,
+    min: 100
   });
   const filterMessages = await filterGPTMessageByMaxContext({
     messages,
@@ -301,18 +310,21 @@ export const runToolWithPromptCall = async (
       const reasoningContent: string = aiResponse.choices?.[0]?.message?.reasoning_content || '';
       const usage = aiResponse.usage;
 
+      const formatReasonContent = removeDatasetCiteText(reasoningContent, retainDatasetCite);
+      const formatContent = removeDatasetCiteText(content, retainDatasetCite);
+
       // API already parse reasoning content
-      if (reasoningContent || !aiChatReasoning) {
+      if (formatReasonContent || !aiChatReasoning) {
         return {
-          answer: content,
-          reasoning: reasoningContent,
+          answer: formatContent,
+          reasoning: formatReasonContent,
           finish_reason,
           inputTokens: usage?.prompt_tokens,
           outputTokens: usage?.completion_tokens
         };
       }
 
-      const [think, answer] = parseReasoningContent(content);
+      const [think, answer] = parseReasoningContent(formatContent);
       return {
         answer,
         reasoning: think,
@@ -327,7 +339,7 @@ export const runToolWithPromptCall = async (
     workflowStreamResponse?.({
       event: SseResponseEventEnum.fastAnswer,
       data: textAdaptGptResponse({
-        reasoning_content: removeDatasetCiteText(reasoning, retainDatasetCite)
+        reasoning_content: reasoning
       })
     });
   }
@@ -592,28 +604,22 @@ async function streamResponse({
 
   let startResponseWrite = false;
   let answer = '';
-  let reasoning = '';
-  let finish_reason: CompletionFinishReason = null;
-  let usage = getLLMDefaultUsage();
 
-  const { parsePart } = parseLLMStreamResponse();
+  const { parsePart, getResponseData, updateFinishReason } = parseLLMStreamResponse();
 
   for await (const part of stream) {
-    usage = part.usage || usage;
     if (res.closed) {
       stream.controller?.abort();
-      finish_reason = 'close';
+      updateFinishReason('close');
       break;
     }
 
-    const { reasoningContent, content, responseContent, finishReason } = parsePart({
+    const { reasoningContent, content, responseContent } = parsePart({
       part,
       parseThinkTag: aiChatReasoning,
       retainDatasetCite
     });
-    finish_reason = finish_reason || finishReason;
     answer += content;
-    reasoning += reasoningContent;
 
     // Reasoning response
     if (aiChatReasoning && reasoningContent) {
@@ -658,7 +664,9 @@ async function streamResponse({
     }
   }
 
-  return { answer, reasoning, finish_reason, usage };
+  const { reasoningContent, content, finish_reason, usage } = getResponseData();
+
+  return { answer: content, reasoning: reasoningContent, finish_reason, usage };
 }
 
 const parseAnswer = (

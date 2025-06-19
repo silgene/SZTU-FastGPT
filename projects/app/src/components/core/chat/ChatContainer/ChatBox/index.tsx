@@ -68,7 +68,6 @@ import MyBox from '@fastgpt/web/components/common/MyBox';
 import { VariableInputEnum } from '@fastgpt/global/core/workflow/constants';
 import { valueTypeFormat } from '@fastgpt/global/core/workflow/runtime/utils';
 
-const ResponseTags = dynamic(() => import('./components/ResponseTags'));
 const FeedbackModal = dynamic(() => import('./components/FeedbackModal'));
 const ReadFeedbackModal = dynamic(() => import('./components/ReadFeedbackModal'));
 const SelectMarkCollection = dynamic(() => import('./components/SelectMarkCollection'));
@@ -554,7 +553,7 @@ const ChatBox = ({
                 const responseData = mergeChatResponseData(item.responseData || []);
                 if (responseData[responseData.length - 1]?.error) {
                   toast({
-                    title: t(responseData[responseData.length - 1].error?.message),
+                    title: t(getErrText(responseData[responseData.length - 1].error)),
                     status: 'error'
                   });
                 }
@@ -960,6 +959,7 @@ const ChatBox = ({
         pb={3}
       >
         <Box id="chat-container" maxW={['100%', '92%']} h={'100%'} mx={'auto'}>
+          {/* chat header */}
           {showEmpty && <Empty />}
           {!!welcomeText && <WelcomeBox welcomeText={welcomeText} />}
           {/* variable input */}
@@ -1014,10 +1014,6 @@ const ChatBox = ({
                         onReadUserDislike: onReadUserDislike(item)
                       }}
                     >
-                      <ResponseTags
-                        showTags={index !== chatRecords.length - 1 || !isChatting}
-                        historyItem={item}
-                      />
                       {/* custom feedback */}
                       {item.customFeedbacks && item.customFeedbacks.length > 0 && (
                         <Box>
@@ -1072,7 +1068,6 @@ const ChatBox = ({
     chatType,
     delOneMessage,
     externalVariableList?.length,
-    isChatting,
     onAddUserDislike,
     onAddUserLike,
     onCloseCustomFeedback,

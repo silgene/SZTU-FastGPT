@@ -26,6 +26,7 @@ export type ChatSchema = {
   teamId: string;
   tmbId: string;
   appId: string;
+  createTime: Date;
   updateTime: Date;
   title: string;
   customTitle: string;
@@ -92,6 +93,7 @@ export type AIChatItemValueItemType = {
 export type AIChatItemType = {
   obj: ChatRoleEnum.AI;
   value: AIChatItemValueItemType[];
+  memories?: Record<string, any>;
   userGoodFeedback?: string;
   userBadFeedback?: string;
   customFeedbacks?: string[];
@@ -112,6 +114,7 @@ export type ChatItemSchema = (UserChatItemType | SystemChatItemType | AIChatItem
   appId: string;
   time: Date;
   durationSeconds?: number;
+  errorMsg?: string;
 };
 
 export type AdminFbkType = {
@@ -143,6 +146,7 @@ export type ChatSiteItemType = (UserChatItemType | SystemChatItemType | AIChatIt
   responseData?: ChatHistoryItemResType[];
   time?: Date;
   durationSeconds?: number;
+  errorMsg?: string;
 } & ChatBoxInputType &
   ResponseTagItemType;
 

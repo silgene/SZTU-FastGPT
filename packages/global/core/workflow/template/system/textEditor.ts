@@ -23,8 +23,7 @@ export const TextEditorNode: FlowNodeTemplateType = {
   avatar: 'core/workflow/template/textConcat',
   name: i18nT('workflow:text_concatenation'),
   intro: i18nT('workflow:intro_text_concatenation'),
-  courseUrl: '/docs/guide/workbench/workflow/text_editor/',
-  version: '4813',
+  courseUrl: '/docs/guide/dashboard/workflow/text_editor/',
   inputs: [
     {
       key: NodeInputKeyEnum.textareaInput,

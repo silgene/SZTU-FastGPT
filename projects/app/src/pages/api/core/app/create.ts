@@ -5,7 +5,6 @@ import { parseParentIdInMongo } from '@fastgpt/global/common/parentFolder/utils'
 import type { AppTypeEnum } from '@fastgpt/global/core/app/constants';
 import { AppFolderTypeList } from '@fastgpt/global/core/app/constants';
 import type { AppSchema } from '@fastgpt/global/core/app/type';
-import { defaultNodeVersion } from '@fastgpt/global/core/workflow/node/constant';
 import { type ShortUrlParams } from '@fastgpt/global/support/marketing/type';
 import { WritePermissionVal } from '@fastgpt/global/support/permission/constant';
 import { TeamAppCreatePermissionVal } from '@fastgpt/global/support/permission/user/constant';
@@ -20,6 +19,9 @@ import { checkTeamAppLimit } from '@fastgpt/service/support/permission/teamLimit
 import { authUserPer } from '@fastgpt/service/support/permission/user/auth';
 import { MongoTeamMember } from '@fastgpt/service/support/user/team/teamMemberSchema';
 import { type ApiRequestProps } from '@fastgpt/service/type/next';
+import { addOperationLog } from '@fastgpt/service/support/operationLog/addOperationLog';
+import { OperationLogEventEnum } from '@fastgpt/global/support/operationLog/constants';
+import { getI18nAppType } from '@fastgpt/service/support/operationLog/util';
 
 export type CreateAppBody = {
   parentId?: ParentIdType;
@@ -125,8 +127,7 @@ export const onCreateApp = async ({
           chatConfig,
           type,
           version: 'v2',
-          pluginData,
-          'pluginData.nodeVersion': defaultNodeVersion
+          pluginData
         }
       ],
       { session, ordered: true }
@@ -150,6 +151,17 @@ export const onCreateApp = async ({
         { session, ordered: true }
       );
     }
+    (async () => {
+      addOperationLog({
+        tmbId,
+        teamId,
+        event: OperationLogEventEnum.CREATE_APP,
+        params: {
+          appName: name!,
+          appType: getI18nAppType(type!)
+        }
+      });
+    })();
 
     await refreshSourceAvatar(avatar, undefined, session);
 

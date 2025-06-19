@@ -26,7 +26,6 @@ import { useRouter } from 'next/router';
 import { TabEnum } from '../../../../../pages/dataset/detail/index';
 import {
   postCreateDatasetApiDatasetCollection,
-  postCreateDatasetCsvTableCollection,
   postCreateDatasetExternalFileCollection,
   postCreateDatasetFileCollection,
   postCreateDatasetLinkCollection,
@@ -49,10 +48,10 @@ const Upload = () => {
   const datasetDetail = useContextSelector(DatasetPageContext, (v) => v.datasetDetail);
   const retrainNewCollectionId = useRef('');
 
-  const { importSource, parentId, sources, setSources, processParamsForm, chunkSize, indexSize } =
-    useContextSelector(DatasetImportContext, (v) => v);
-
-  const { handleSubmit } = processParamsForm;
+  const { importSource, parentId, sources, setSources, processParamsForm } = useContextSelector(
+    DatasetImportContext,
+    (v) => v
+  );
 
   const { totalFilesCount, waitingFilesCount, allFinished, hasCreatingFiles } = useMemo(() => {
     const totalFilesCount = sources.length;
@@ -81,7 +80,7 @@ const Upload = () => {
   }, [waitingFilesCount, totalFilesCount, allFinished, t]);
 
   const { runAsync: startUpload, loading: isLoading } = useRequest2(
-    async ({ trainingType, chunkSplitter, qaPrompt, webSelector }: ImportFormType) => {
+    async ({ customPdfParse, webSelector, ...data }: ImportFormType) => {
       if (sources.length === 0) return;
       const filterWaitingSources = sources.filter((item) => item.createStatus === 'waiting');
 
@@ -102,23 +101,12 @@ const Upload = () => {
         const commonParams: ApiCreateDatasetCollectionParams & {
           name: string;
         } = {
+          ...data,
           parentId,
           datasetId: datasetDetail._id,
           name: item.sourceName,
 
-          customPdfParse: processParamsForm.getValues('customPdfParse'),
-
-          trainingType,
-          imageIndex: processParamsForm.getValues('imageIndex'),
-          autoIndexes: processParamsForm.getValues('autoIndexes'),
-
-          chunkSettingMode: processParamsForm.getValues('chunkSettingMode'),
-          chunkSplitMode: processParamsForm.getValues('chunkSplitMode'),
-
-          chunkSize,
-          indexSize,
-          chunkSplitter,
-          qaPrompt: trainingType === DatasetCollectionDataProcessModeEnum.qa ? qaPrompt : undefined
+          customPdfParse
         };
 
         if (importSource === ImportDataSourceEnum.reTraining) {
@@ -145,11 +133,6 @@ const Upload = () => {
           await postCreateDatasetTextCollection({
             ...commonParams,
             text: item.rawText
-          });
-        } else if (importSource === ImportDataSourceEnum.csvTable && item.dbFileId) {
-          await postCreateDatasetCsvTableCollection({
-            ...commonParams,
-            fileId: item.dbFileId
           });
         } else if (importSource === ImportDataSourceEnum.externalFile && item.externalFileUrl) {
           await postCreateDatasetExternalFileCollection({
@@ -286,7 +269,10 @@ const Upload = () => {
       </TableContainer>
 
       <Flex justifyContent={'flex-end'} mt={4}>
-        <Button isLoading={isLoading} onClick={handleSubmit((data) => startUpload(data))}>
+        <Button
+          isLoading={isLoading}
+          onClick={processParamsForm.handleSubmit((data) => startUpload(data))}
+        >
           {totalFilesCount > 0 &&
             `${t('dataset:total_num_files', {
               total: totalFilesCount
