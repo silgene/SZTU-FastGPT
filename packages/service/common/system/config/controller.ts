@@ -8,11 +8,13 @@ export const getFastGPTConfigFromDB = async (): Promise<{
   fastgptConfig: FastGPTConfigFileType;
   licenseData?: LicenseDataType;
 }> => {
-  if (!FastGPTProUrl) {
-    return {
-      fastgptConfig: {} as FastGPTConfigFileType
-    };
-  }
+  // 修改源码,使其可以读取数据库中的fastgptConfig
+
+  // if (!FastGPTProUrl) {
+  //   return {
+  //     fastgptConfig: {} as FastGPTConfigFileType
+  //   };
+  // }
 
   const [fastgptConfig, licenseConfig] = await Promise.all([
     MongoSystemConfigs.findOne({
@@ -38,8 +40,8 @@ export const getFastGPTConfigFromDB = async (): Promise<{
     : undefined;
 
   return {
-    fastgptConfig: config as FastGPTConfigFileType,
-    licenseData
+    fastgptConfig: config as FastGPTConfigFileType
+    // licenseData
   };
 };
 
