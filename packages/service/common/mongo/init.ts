@@ -51,6 +51,8 @@ export async function connectMongo(db: Mongoose, url: string): Promise<Mongoose>
       socketTimeoutMS: 60000,
       maxIdleTimeMS: 300000,
       retryWrites: true,
+      // 本地开发连接远程mongodb数据库时需要directConnection:true
+      directConnection: true,
       retryReads: true
     };
 
