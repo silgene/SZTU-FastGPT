@@ -33,6 +33,7 @@ const AppDetail = () => {
 
   useEffect(() => {
     setSource('test');
+    console.log('detail app', appDetail);
     appDetail._id && setAppId(appDetail._id);
   }, [appDetail._id, setSource, setAppId]);
 

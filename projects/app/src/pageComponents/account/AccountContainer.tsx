@@ -49,7 +49,8 @@ const AccountContainer = ({
       label: t('account:personal_information'),
       value: TabEnum.info
     },
-    ...(feConfigs?.isPlus
+    // TODO: 权限相关暂时全部解禁,后续将所有 || true 删除
+    ...(feConfigs?.isPlus || true
       ? [
           {
             icon: 'support/user/usersLight',
@@ -63,7 +64,7 @@ const AccountContainer = ({
           }
         ]
       : []),
-    ...(feConfigs?.show_pay && userInfo?.team?.permission.hasManagePer
+    ...((feConfigs?.show_pay && userInfo?.team?.permission.hasManagePer) || true
       ? [
           {
             icon: 'support/bill/payRecordLight',
@@ -82,7 +83,7 @@ const AccountContainer = ({
       label: t('account:model_provider'),
       value: TabEnum.model
     },
-    ...(feConfigs?.show_promotion && userInfo?.team?.permission.isOwner
+    ...((feConfigs?.show_promotion && userInfo?.team?.permission.isOwner) || true
       ? [
           {
             icon: 'support/account/promotionLight',
@@ -91,7 +92,7 @@ const AccountContainer = ({
           }
         ]
       : []),
-    ...(userInfo?.team?.permission.hasApikeyCreatePer
+    ...(userInfo?.team?.permission.hasApikeyCreatePer || true
       ? [
           {
             icon: 'key',
@@ -101,7 +102,7 @@ const AccountContainer = ({
         ]
       : []),
 
-    ...(feConfigs.isPlus
+    ...(feConfigs.isPlus || true
       ? [
           {
             icon: 'support/user/informLight',
