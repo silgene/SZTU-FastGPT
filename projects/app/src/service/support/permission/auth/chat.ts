@@ -32,6 +32,7 @@ type AuthChatCommonProps = {
   outLinkUid?: string;
   teamId?: string;
   teamToken?: string;
+  shareToken?: string;
 };
 
 export async function authChatCrud({
@@ -98,7 +99,7 @@ export async function authChatCrud({
       outLinkConfig,
       uid,
       appId: shareChatAppId
-    } = await authOutLink({ shareId, outLinkUid });
+    } = await authOutLink({ shareId, outLinkUid, shareToken: props.shareToken });
 
     if (String(shareChatAppId) !== appId) return Promise.reject(ChatErrEnum.unAuthChat);
 

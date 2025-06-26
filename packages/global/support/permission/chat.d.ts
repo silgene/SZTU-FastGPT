@@ -1,6 +1,7 @@
 type ShareChatAuthProps = {
   shareId?: string;
   outLinkUid?: string;
+  shareToken?: string;
 };
 type TeamChatAuthProps = {
   teamId?: string;

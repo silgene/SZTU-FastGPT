@@ -23,7 +23,8 @@ export function authOutLinkChatLimit(data: AuthOutLinkLimitProps): Promise<AuthO
 
 export const authOutLink = async ({
   shareId,
-  outLinkUid
+  outLinkUid,
+  shareToken
 }: ShareChatAuthProps): Promise<{
   uid: string;
   appId: string;
@@ -32,7 +33,7 @@ export const authOutLink = async ({
   if (!outLinkUid) {
     return Promise.reject(OutLinkErrEnum.linkUnInvalid);
   }
-  const result = await authOutLinkValid({ shareId });
+  const result = await authOutLinkValid({ shareId, shareToken });
 
   const { uid } = await authOutLinkInit({
     outLinkUid,
@@ -49,12 +50,13 @@ export async function authOutLinkChatStart({
   shareId,
   ip,
   outLinkUid,
-  question
+  question,
+  shareToken
 }: AuthOutLinkChatProps & {
   shareId: string;
 }) {
   // get outLink and app
-  const { outLinkConfig, appId } = await authOutLinkValid({ shareId });
+  const { outLinkConfig, appId } = await authOutLinkValid({ shareId, shareToken });
 
   // check ai points and chat limit
   const [{ timezone, externalProvider }, { uid }] = await Promise.all([

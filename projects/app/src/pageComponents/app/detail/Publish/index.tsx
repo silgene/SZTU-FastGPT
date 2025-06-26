@@ -12,6 +12,7 @@ import { AppContext } from '../context';
 import { cardStyles } from '../constants';
 import { useSystemStore } from '@/web/common/system/useSystemStore';
 import { useToast } from '@fastgpt/web/hooks/useToast';
+import ThirdPartyLink from './ThirdPartyLink';
 
 const Link = dynamic(() => import('./Link'));
 const API = dynamic(() => import('./API'));
@@ -33,6 +34,13 @@ const OutLink = () => {
       title: t('common:core.app.Share link'),
       desc: t('common:core.app.Share link desc'),
       value: PublishChannelEnum.share,
+      isProFn: false
+    },
+    {
+      icon: '/imgs/modal/shareFill.svg',
+      title: t('common:core.app.Share third party'),
+      desc: t('common:core.app.Share third party desc'),
+      value: PublishChannelEnum.thirdparty,
       isProFn: false
     },
     {
@@ -132,6 +140,10 @@ const OutLink = () => {
         {linkType === PublishChannelEnum.share && (
           <Link appId={appId} type={PublishChannelEnum.share} />
         )}
+        {linkType === PublishChannelEnum.thirdparty && (
+          <ThirdPartyLink appId={appId} type={PublishChannelEnum.thirdparty} />
+        )}
+
         {linkType === PublishChannelEnum.apikey && <API appId={appId} />}
         {linkType === PublishChannelEnum.feishu && <FeiShu appId={appId} />}
         {linkType === PublishChannelEnum.dingtalk && <DingTalk appId={appId} />}

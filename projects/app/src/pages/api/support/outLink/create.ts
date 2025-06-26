@@ -11,11 +11,10 @@ import { getI18nAppType } from '@fastgpt/service/support/operationLog/util';
 import { getNanoid } from '@fastgpt/global/common/string/tools';
 
 export type OutLinkCreateQuery = {};
-export type OutLinkCreateBody = OutLinkEditType &
-  OutLinkEditType & {
-    appId: string;
-    type: PublishChannelEnum;
-  };
+export type OutLinkCreateBody = OutLinkEditType & {
+  appId: string;
+  type: PublishChannelEnum;
+};
 export type OutLinkCreateResponse = string;
 
 async function handler(

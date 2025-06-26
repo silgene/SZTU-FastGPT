@@ -39,6 +39,9 @@ import { useI18nLng } from '@fastgpt/web/hooks/useI18n';
 import { type AppSchema } from '@fastgpt/global/core/app/type';
 import ChatQuoteList from '@/pageComponents/chat/ChatQuoteList';
 import { useToast } from '@fastgpt/web/hooks/useToast';
+import Cookie from 'cookie';
+import type { GetServerSideProps } from 'next';
+import { ThirdPartyAuthMap } from '@fastgpt/service/support/permission/publish/thirdpartyAuth/auth';
 
 const CustomPluginRunBox = dynamic(() => import('@/pageComponents/chat/CustomPluginRunBox'));
 
@@ -54,6 +57,7 @@ type Props = {
   responseDetail: boolean;
   // showFullText: boolean;
   showNodeStatus: boolean;
+  shareToken?: string;
 };
 
 const OutLink = (props: Props) => {
@@ -99,7 +103,7 @@ const OutLink = (props: Props) => {
       const shareId = outLinkAuthData.shareId;
       const outLinkUid = outLinkAuthData.outLinkUid;
       if (!outLinkUid || !shareId || forbidLoadChat.current) return;
-
+      // getInitOutLinkChatInfo中初始化,在里面也需要进行shareToken鉴权
       const res = await getInitOutLinkChatInfo({
         chatId,
         shareId,
@@ -334,9 +338,10 @@ const Render = (props: Props) => {
       shareId,
       outLinkUid: chatHistoryProviderParams.outLinkUid,
       chatId,
-      type: GetChatTypeEnum.outLink
+      type: GetChatTypeEnum.outLink,
+      shareToken: props.shareToken || ''
     };
-  }, [appId, chatHistoryProviderParams.outLinkUid, chatId, shareId]);
+  }, [appId, chatHistoryProviderParams.outLinkUid, chatId, shareId, props.shareToken]);
 
   useMount(() => {
     setSource('share');
@@ -357,13 +362,14 @@ const Render = (props: Props) => {
     if (chatHistoryProviderParams.outLinkUid) {
       setOutLinkAuthData({
         shareId,
+        shareToken: props.shareToken || '',
         outLinkUid: chatHistoryProviderParams.outLinkUid
       });
     }
     return () => {
       setOutLinkAuthData({});
     };
-  }, [chatHistoryProviderParams.outLinkUid, setOutLinkAuthData, shareId]);
+  }, [chatHistoryProviderParams.outLinkUid, setOutLinkAuthData, shareId, props.shareToken]);
 
   // Watch appId
   useEffect(() => {
@@ -400,7 +406,8 @@ const Render = (props: Props) => {
 
 export default React.memo(Render);
 
-export async function getServerSideProps(context: any) {
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  // console.log('shared props', context);
   const shareId = context?.query?.shareId || '';
   const authToken = context?.query?.authToken || '';
   const customUid = context?.query?.customUid || '';
@@ -411,7 +418,7 @@ export async function getServerSideProps(context: any) {
         {
           shareId
         },
-        'appId showRawSource showNodeStatus responseDetail'
+        'appId showRawSource showNodeStatus responseDetail thirdPartyAuth'
       )
         .populate<{ associatedApp: AppSchema }>('associatedApp', 'name avatar intro')
         .lean();
@@ -420,8 +427,7 @@ export async function getServerSideProps(context: any) {
       return undefined;
     }
   })();
-
-  return {
+  const resProps = {
     props: {
       appId: app?.appId ? String(app?.appId) : '',
       appName: app?.associatedApp?.name ?? 'AI',
@@ -434,7 +440,48 @@ export async function getServerSideProps(context: any) {
       shareId: shareId ?? '',
       authToken: authToken ?? '',
       customUid,
+      shareToken: '', // shareToken 需要在鉴权后设置
       ...(await serviceSideProps(context, ['file', 'app', 'chat', 'workflow']))
     }
   };
-}
+  // 如果需要鉴权
+  if (app?.thirdPartyAuth?.needAuth) {
+    const { authType } = app.thirdPartyAuth;
+    // 这次请求可能是已经第三方登录完成后的回调,先判断是否是第三方的回调,如果是第三方的回调,则进行第三方验证
+    const res = await ThirdPartyAuthMap[authType].authThirdPartyLogin?.(context);
+    if (res && res.success && res.shareToken) {
+      // 如果验证成功,则进入该页面,并设置cookie中的shareToken
+      context.res.setHeader(
+        'Set-Cookie',
+        `shareToken=${res.shareToken}; Path=/; HttpOnly; Max-Age=86400`
+      );
+      resProps.props.shareToken = res.shareToken;
+      return resProps;
+    }
+
+    // 如果不是第三方的回调,从cookie中获取 sharedToken, 如果没有则需要重定向到登录页面
+    const shareToken = Cookie.parse(context.req.headers.cookie || '')?.shareToken;
+    if (!shareToken) {
+      const req = context.req;
+      // 获取主机
+      const host = req.headers['host'];
+
+      // 获取原始请求路径和查询
+      const url = req.url; // 例如: /path?query=1
+
+      // TODO: 判断是http还是https
+      const fullUrl = `http://${host}${url}`;
+
+      return {
+        redirect: {
+          destination:
+            ThirdPartyAuthMap[authType]?.authThirdPartyRedirectLoginUrl?.(fullUrl) ||
+            `http://${host}/404`, // 你的目标地址
+          permanent: false // 302 临时重定向
+        }
+      };
+    }
+  }
+
+  return resProps;
+};

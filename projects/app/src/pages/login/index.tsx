@@ -63,6 +63,9 @@ const Login = ({ ChineseRedirectUrl }: { ChineseRedirectUrl: string }) => {
       setUserInfo(res.user);
 
       const decodeLastRoute = decodeURIComponent(lastRoute);
+      if (router.query?.callbackUrl) {
+        window.location.href = decodeURIComponent(router.query.callbackUrl as string);
+      }
 
       const navigateTo =
         decodeLastRoute && !decodeLastRoute.includes('/login') && decodeLastRoute.startsWith('/')

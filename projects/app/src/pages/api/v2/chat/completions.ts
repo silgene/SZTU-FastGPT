@@ -101,6 +101,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     customUid,
     // share chat
     shareId,
+    shareToken,
     outLinkUid,
     // team chat
     teamId: spaceTeamId,
@@ -165,6 +166,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       if (shareId && outLinkUid) {
         return authShareChat({
           shareId,
+          shareToken,
           outLinkUid,
           chatId,
           ip: originIp,

@@ -1,6 +1,7 @@
 import { AppSchema } from '../../core/app/type';
-import type { PublishChannelEnum } from './constant';
+import type { PublishChannelEnum, ThirdPartyAuthEnum } from './constant';
 import { RequireOnlyOne } from '../../common/type/utils';
+import { type GetServerSidePropsContext } from 'next';
 
 // Feishu Config interface
 export interface FeishuAppType {
@@ -81,6 +82,13 @@ export type OutLinkSchema<T extends OutlinkAppType = undefined> = {
     // Verification message hook url
     hookUrl?: string;
   };
+  // 第三方登录认证
+  thirdPartyAuth?: {
+    // 是否需要认证
+    needAuth: boolean;
+    // 认证类型
+    authType: ThirdPartyAuthEnum;
+  };
 
   app: T;
 };
@@ -98,7 +106,7 @@ export type OutLinkEditType<T = undefined> = {
   // response when error or other situation
   defaultResponse?: string;
   limit?: OutLinkSchema<T>['limit'];
-
+  thirdPartyAuth?: OutLinkSchema<T>['thirdPartyAuth'];
   // config for specific platform
   app?: T;
 };

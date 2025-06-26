@@ -26,7 +26,8 @@ export type OutLinkUpdateResponse = {};
 async function handler(
   req: ApiRequestProps<OutLinkUpdateBody, OutLinkUpdateQuery>
 ): Promise<OutLinkUpdateResponse> {
-  const { _id, name, responseDetail, limit, app, showRawSource, showNodeStatus } = req.body;
+  const { _id, name, responseDetail, limit, app, showRawSource, showNodeStatus, thirdPartyAuth } =
+    req.body;
 
   if (!_id) {
     return Promise.reject(CommonErrEnum.missingParams);
@@ -51,7 +52,8 @@ async function handler(
     showNodeStatus,
     // showFullText,
     limit,
-    app
+    app,
+    thirdPartyAuth
   });
 
   (async () => {

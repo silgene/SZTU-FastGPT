@@ -9,6 +9,7 @@ import { type PaginationProps, type PaginationResponse } from '@fastgpt/web/comm
 import { type GetHistoriesProps } from '@/global/core/chat/api';
 import { parsePaginationRequest } from '@fastgpt/service/common/api/pagination';
 import { addMonths } from 'date-fns';
+import Cookie from 'cookie';
 
 export type getHistoriesQuery = {};
 
@@ -36,7 +37,8 @@ async function handler(
 
   const match = await (async () => {
     if (shareId && outLinkUid) {
-      const { uid } = await authOutLink({ shareId, outLinkUid });
+      const shareToken = Cookie.parse(req.headers.cookie || '')?.shareToken;
+      const { uid } = await authOutLink({ shareId, outLinkUid, shareToken });
 
       return {
         shareId,

@@ -1,5 +1,6 @@
 import { AppTypeEnum } from '@fastgpt/global/core/app/constants';
 import { type AppDetailType } from '@fastgpt/global/core/app/type.d';
+import { ThirdPartyAuthEnum } from '@fastgpt/global/support/outLink/constant';
 import type {
   DingtalkAppType,
   FeishuAppType,
@@ -33,6 +34,17 @@ export const defaultOutLinkForm: OutLinkEditType = {
   limit: {
     QPM: 100,
     maxUsagePoints: -1
+  },
+  thirdPartyAuth: {
+    needAuth: false,
+    authType: ThirdPartyAuthEnum.NONE
+  }
+};
+export const defaultThirdPartyOutLinkForm: OutLinkEditType = {
+  ...defaultOutLinkForm,
+  thirdPartyAuth: {
+    needAuth: true,
+    authType: ThirdPartyAuthEnum.FASTGPT
   }
 };
 

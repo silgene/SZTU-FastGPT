@@ -10,12 +10,13 @@ import { getAppLatestVersion } from '@fastgpt/service/core/app/version/controlle
 import { FlowNodeTypeEnum } from '@fastgpt/global/core/workflow/node/constant';
 import { NextAPI } from '@/service/middleware/entry';
 import { getRandomUserAvatar } from '@fastgpt/global/support/user/utils';
+import Cookie from 'cookie';
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   let { chatId, shareId, outLinkUid } = req.query as InitOutLinkChatProps;
-
+  const shareToken = Cookie.parse(req.headers.cookie || '')?.shareToken;
   // auth link permission
-  const { uid, appId } = await authOutLink({ shareId, outLinkUid });
+  const { uid, appId } = await authOutLink({ shareId, outLinkUid, shareToken });
 
   // auth app permission
   const [chat, app] = await Promise.all([

@@ -29,6 +29,7 @@
     "@tanstack/react-query": "^4.24.10",
     "ahooks": "^3.7.11",
     "axios": "^1.8.2",
+    "cookie": "^0.7.2",
     "date-fns": "2.30.0",
     "dayjs": "^1.11.7",
     "echarts": "5.4.1",
@@ -70,6 +71,7 @@
   },
   "devDependencies": {
     "@svgr/webpack": "^6.5.1",
+    "@types/cookie": "^0.5.4",
     "@types/js-yaml": "^4.0.9",
     "@types/jsonwebtoken": "^9.0.3",
     "@types/lodash": "^4.14.191",

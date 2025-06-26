@@ -6,6 +6,7 @@ import {
   TeamMemberCollectionName
 } from '@fastgpt/global/support/user/team/constant';
 import { AppCollectionName } from '../../core/app/schema';
+import { ThirdPartyAuthEnum } from '@fastgpt/global/support/outLink/constant';
 
 const OutLinkSchema = new Schema({
   shareId: {
@@ -71,6 +72,17 @@ const OutLinkSchema = new Schema({
     },
     hookUrl: {
       type: String
+    }
+  },
+  thirdPartyAuth: {
+    needAuth: {
+      type: Boolean,
+      default: false
+    },
+    authType: {
+      type: String,
+      default: ThirdPartyAuthEnum.NONE,
+      enum: Object.values(ThirdPartyAuthEnum)
     }
   },
 
