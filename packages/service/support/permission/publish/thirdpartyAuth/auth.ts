@@ -5,6 +5,11 @@ import {
   fastgptAuthThirdPartyRedirectLoginUrl,
   fastgptAuthThirdPartyTokenValid
 } from './fastgpt';
+import {
+  SZTUAuthThirdPartyLogin,
+  SZTUAuthThirdPartyRedirectLoginUrl,
+  SZTUAuthThirdPartyTokenValid
+} from './sztu';
 
 export type AuthThirdPartyLoginFn = (
   context: GetServerSidePropsContext
@@ -35,6 +40,9 @@ export const ThirdPartyAuthMap: ThirdPartyAuthMapType = {
   },
   [ThirdPartyAuthEnum.SZTU]: {
     name: 'SZTU',
-    description: 'SZTU authentication for accessing the service.'
+    description: 'SZTU authentication for accessing the service.',
+    authThirdPartyLogin: SZTUAuthThirdPartyLogin,
+    authThirdPartyTokenValid: SZTUAuthThirdPartyTokenValid,
+    authThirdPartyRedirectLoginUrl: SZTUAuthThirdPartyRedirectLoginUrl
   }
 };

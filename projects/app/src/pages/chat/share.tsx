@@ -461,7 +461,10 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
     // 如果不是第三方的回调,从cookie中获取 sharedToken, 如果没有则需要重定向到登录页面
     const shareToken = Cookie.parse(context.req.headers.cookie || '')?.shareToken;
-    if (!shareToken) {
+    if (
+      !shareToken ||
+      !(await ThirdPartyAuthMap[authType]?.authThirdPartyTokenValid?.(shareToken))
+    ) {
       const req = context.req;
       // 获取主机
       const host = req.headers['host'];
